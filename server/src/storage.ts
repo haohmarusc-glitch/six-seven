@@ -14,7 +14,19 @@ export interface VideoStorage {
 // do storage não dá pra validar fora do Replit; o resto do fluxo (upload,
 // aprovação, batalha, voto) já é testado ponta a ponta com esse fallback.
 class ReplitStorage implements VideoStorage {
-  private client = new ObjectStorageClient();
+  // Lazy de propósito -- o construtor do ObjectStorageClient dispara
+  // descoberta assíncrona do bucket via um sidecar local do Replit
+  // (127.0.0.1:1106) que ainda não está pronto quando o módulo é importado
+  // no boot do deployment. Como `videoStorage` é instanciado no top-level
+  // deste arquivo, criar o client ali (antes: property initializer) derrubava
+  // o processo com unhandled rejection antes do healthcheck responder. Só
+  // cria o client de fato na primeira operação de storage, bem depois do
+  // servidor já estar de pé.
+  private _client: ObjectStorageClient | null = null;
+  private get client(): ObjectStorageClient {
+    if (!this._client) this._client = new ObjectStorageClient();
+    return this._client;
+  }
 
   async save(key: string, buffer: Buffer): Promise<void> {
     const result = await this.client.uploadFromBytes(key, buffer);

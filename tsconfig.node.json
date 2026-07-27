@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    // node_modules é montado somente-leitura no build de deployment do
+    // Replit (autoscale) -- ver mesmo comentário em tsconfig.app.json.
+    "tsBuildInfoFile": "./.tsbuildinfo/node.tsbuildinfo",
     "target": "es2023",
     "lib": ["ES2023"],
     "types": ["node"],
