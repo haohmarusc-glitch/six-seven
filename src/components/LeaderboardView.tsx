@@ -24,7 +24,13 @@ function Thumb({ clip, rank }: { clip: Clip; rank: number }) {
   );
 }
 
-export function LeaderboardView({ refreshKey }: { refreshKey: number }) {
+export function LeaderboardView({
+  refreshKey,
+  onChallenge,
+}: {
+  refreshKey: number;
+  onChallenge: (clipId: string) => void;
+}) {
   const [clips, setClips] = useState<Clip[]>([]);
 
   useEffect(() => {
@@ -52,14 +58,25 @@ export function LeaderboardView({ refreshKey }: { refreshKey: number }) {
           <div className="flex-1">
             <Thumb clip={clip} rank={i + 1} />
           </div>
-          <button
-            type="button"
-            onClick={() => handleDelete(clip.id)}
-            className="text-white/30 hover:text-rose-400 text-xs px-2 py-1 shrink-0"
-            aria-label={`Apagar clipe ${clip.label}`}
-          >
-            apagar
-          </button>
+          <div className="flex flex-col gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => onChallenge(clip.id)}
+              disabled={ranked.length < 2}
+              className="text-[11px] font-bold text-fuchsia-300 hover:text-fuchsia-200 disabled:opacity-30 disabled:hover:text-fuchsia-300 px-2 py-1 rounded-md bg-fuchsia-500/10 ring-1 ring-fuchsia-400/30"
+              aria-label={`Chamar ${clip.label} pra batalha`}
+            >
+              batalhar
+            </button>
+            <button
+              type="button"
+              onClick={() => handleDelete(clip.id)}
+              className="text-white/30 hover:text-rose-400 text-xs px-2 py-1"
+              aria-label={`Apagar clipe ${clip.label}`}
+            >
+              apagar
+            </button>
+          </div>
         </div>
       ))}
     </div>

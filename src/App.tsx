@@ -7,7 +7,7 @@ type Tab = "record" | "vote" | "rank";
 
 const TABS: { key: Tab; label: string; emoji: string }[] = [
   { key: "record", label: "Farmar", emoji: "🎥" },
-  { key: "vote", label: "Votar", emoji: "✦" },
+  { key: "vote", label: "Batalha", emoji: "⚔️" },
   { key: "rank", label: "Ranking", emoji: "👑" },
 ];
 
@@ -17,6 +17,14 @@ function App() {
   // recarregarem do IndexedDB sem precisar de um estado global.
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = () => setRefreshKey((k) => k + 1);
+
+  // Clipe "convocado" a partir do botão batalhar do ranking -- força esse
+  // clipe pra próxima batalha, com adversário sorteado.
+  const [challengerId, setChallengerId] = useState<string | null>(null);
+  const handleChallenge = (clipId: string) => {
+    setChallengerId(clipId);
+    setTab("vote");
+  };
 
   return (
     <div className="min-h-dvh bg-[#0a0a12] text-white flex flex-col">
@@ -34,8 +42,16 @@ function App() {
       <main className="flex-1 px-4 pb-28 flex items-start justify-center">
         <div className="w-full pt-2">
           {tab === "record" && <RecordView onSaved={bump} />}
-          {tab === "vote" && <VoteView refreshKey={refreshKey} />}
-          {tab === "rank" && <LeaderboardView refreshKey={refreshKey} />}
+          {tab === "vote" && (
+            <VoteView
+              refreshKey={refreshKey}
+              challengerId={challengerId}
+              onChallengerConsumed={() => setChallengerId(null)}
+            />
+          )}
+          {tab === "rank" && (
+            <LeaderboardView refreshKey={refreshKey} onChallenge={handleChallenge} />
+          )}
         </div>
       </main>
 
