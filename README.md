@@ -18,6 +18,12 @@ majoritariamente adolescente.
 - **Segurança de conteúdo:** clipe só aparece pra outros depois de aprovado
   em `/admin`; um clipe já aprovado que acumular 3 denúncias de
   dispositivos diferentes volta sozinho pra revisão
+- **Pré-triagem por IA (opcional):** se `ANTHROPIC_API_KEY` estiver
+  configurada, cada clipe passa por uma checagem automática (Claude Haiku,
+  em cima de um frame extraído com ffmpeg) antes de cair na fila — clipe
+  limpo já entra aprovado, qualquer dúvida cai pra revisão manual como
+  antes. Sem a secret, todo clipe cai pra revisão manual (comportamento
+  padrão, sem mudança) — ver `server/src/moderation.ts`
 
 ## Configurando no Replit (primeira vez)
 
@@ -25,6 +31,9 @@ majoritariamente adolescente.
    a secret `DATABASE_URL` sozinho)
 2. **Token de moderação** — aba Secrets, adiciona `ADMIN_TOKEN` com um
    valor forte qualquer (é a senha do painel `/admin`)
+2.1. **(Opcional) Pré-triagem por IA** — aba Secrets, adiciona
+   `ANTHROPIC_API_KEY` com uma chave da Anthropic. Sem essa secret, tudo
+   continua funcionando normalmente, só que 100% por revisão manual
 3. **Object Storage** — aba Tools → Object Storage, cria o bucket padrão
    (sem isso, upload de clipe falha em produção)
 4. **Aplica o schema no banco** (uma vez, e de novo sempre que

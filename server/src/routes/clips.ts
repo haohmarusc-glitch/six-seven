@@ -6,6 +6,7 @@ import { clipsTable, votesTable, reportsTable } from "../schema.js";
 import { videoStorage } from "../storage.js";
 import { requireDeviceId, getIdParam } from "../middleware.js";
 import { auraScore } from "../aura.js";
+import { screenClip } from "../moderation.js";
 
 const router = Router();
 
@@ -39,7 +40,14 @@ router.post("/clips", requireDeviceId, upload.single("video"), async (req, res) 
 
   await videoStorage.save(clip.videoKey, req.file.buffer);
 
-  res.status(201).json({ id: clip.id, status: clip.status });
+  // Pré-triagem por IA (Haiku) -- aprova na hora se o frame vier limpo,
+  // senão deixa como pending pra revisão manual no /admin (ver moderation.ts).
+  const status = await screenClip(req.file.buffer);
+  if (status === "approved") {
+    await db.update(clipsTable).set({ status: "approved" }).where(eq(clipsTable.id, clip.id));
+  }
+
+  res.status(201).json({ id: clip.id, status });
 });
 
 // Meus clipes -- pra RecordView mostrar se o que a pessoa gravou já foi
