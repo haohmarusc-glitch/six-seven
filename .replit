@@ -12,3 +12,7 @@ run = ["npm", "run", "start"]
 
 [objectStorage]
 defaultBucketID = "replit-objstore-b270335f-9501-401a-989a-4614bb1aa646"
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 120000
