@@ -16,6 +16,11 @@ const ffmpegBinary: string | null = ffmpegPathImport as unknown as string | null
 // pra revisão manual -- nunca auto-aprova sem checagem (ver screenClip).
 const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
 
+// Teto do lado maior do frame -- a triagem só precisa reconhecer conteúdo
+// impróprio, não analisar detalhe fino, então reduzir aqui corta o custo de
+// tokens de imagem na API pela metade ou mais sem perder precisão.
+const MAX_FRAME_DIMENSION = 480;
+
 async function extractFrame(videoBuffer: Buffer): Promise<Buffer> {
   if (!ffmpegBinary) throw new Error("Binário do ffmpeg-static não encontrado");
   const inPath = path.join(os.tmpdir(), `${randomUUID()}.webm`);
@@ -23,7 +28,19 @@ async function extractFrame(videoBuffer: Buffer): Promise<Buffer> {
   await writeFile(inPath, videoBuffer);
   try {
     await new Promise<void>((resolve, reject) => {
-      const proc = spawn(ffmpegBinary, ["-y", "-i", inPath, "-frames:v", "1", "-update", "1", "-q:v", "3", outPath]);
+      // scale mantém a proporção e reduz o lado maior a MAX_FRAME_DIMENSION;
+      // -2 arredonda o lado menor pro múltiplo de 2 mais próximo (exigido
+      // por vários codecs de vídeo -- inofensivo aqui, mas é o padrão seguro).
+      const scale = `scale='if(gt(iw,ih),${MAX_FRAME_DIMENSION},-2)':'if(gt(iw,ih),-2,${MAX_FRAME_DIMENSION})'`;
+      const proc = spawn(ffmpegBinary, [
+        "-y",
+        "-i", inPath,
+        "-frames:v", "1",
+        "-update", "1",
+        "-vf", scale,
+        "-q:v", "3",
+        outPath,
+      ]);
       proc.on("error", reject);
       proc.on("exit", (code) => (code === 0 ? resolve() : reject(new Error(`ffmpeg saiu com código ${code}`))));
     });
