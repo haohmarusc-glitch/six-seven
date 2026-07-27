@@ -63,4 +63,19 @@ router.post("/admin/clips/:id/reject", requireAdmin, async (req, res) => {
   res.status(204).end();
 });
 
+router.delete("/admin/clips/:id", requireAdmin, async (req, res) => {
+  const id = getIdParam(req, res);
+  if (!id) return;
+  const [clip] = await db
+    .delete(clipsTable)
+    .where(eq(clipsTable.id, id))
+    .returning({ videoKey: clipsTable.videoKey });
+  if (!clip) {
+    res.status(404).end();
+    return;
+  }
+  await videoStorage.remove(clip.videoKey);
+  res.status(204).end();
+});
+
 export default router;

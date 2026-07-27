@@ -68,6 +68,21 @@ router.get("/clips/mine", requireDeviceId, async (req, res) => {
   res.json(rows);
 });
 
+router.delete("/clips/:id", requireDeviceId, async (req, res) => {
+  const id = getIdParam(req, res);
+  if (!id) return;
+  const [clip] = await db.select().from(clipsTable).where(eq(clipsTable.id, id));
+  // 404 tanto pra clipe inexistente quanto pra clipe de outro dispositivo --
+  // não vaza se o id existe e é de outra pessoa.
+  if (!clip || clip.deviceId !== req.deviceId) {
+    res.status(404).end();
+    return;
+  }
+  await db.delete(clipsTable).where(eq(clipsTable.id, id));
+  await videoStorage.remove(clip.videoKey);
+  res.status(204).end();
+});
+
 // Serve os bytes do vídeo -- só libera se o clipe está aprovado (rota de
 // admin tem a própria versão sem essa checagem, pra revisar pendente).
 router.get("/clips/:id/video", async (req, res) => {
