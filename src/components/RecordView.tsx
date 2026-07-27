@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCamera, MAX_CLIP_MS } from "../hooks/useCamera";
-import { uploadClip, listMyClips, type MyClip } from "../lib/api";
+import { uploadClip, listMyClips, deleteClip, type MyClip } from "../lib/api";
 
 const AURA_LABELS = [
   "Farmando aura",
@@ -21,6 +21,7 @@ export function RecordView({ onSaved }: { onSaved: () => void }) {
   const [uploading, setUploading] = useState(false);
   const [savedPulse, setSavedPulse] = useState(false);
   const [mine, setMine] = useState<MyClip[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     start();
@@ -42,6 +43,19 @@ export function RecordView({ onSaved }: { onSaved: () => void }) {
       listMyClips().then(setMine).catch(() => {});
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Excluir esse clipe?")) return;
+    setDeletingId(id);
+    try {
+      await deleteClip(id);
+      setMine((prev) => prev.filter((c) => c.id !== id));
+    } catch {
+      // falhou -- deixa o clipe na lista pra tentar de novo
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -118,9 +132,20 @@ export function RecordView({ onSaved }: { onSaved: () => void }) {
           {mine.slice(0, 5).map((c) => (
             <div key={c.id} className="flex items-center justify-between gap-2 bg-white/5 rounded-lg px-3 py-2 ring-1 ring-white/10">
               <span className="text-sm text-white/80 truncate">{c.label}</span>
-              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ring-1 shrink-0 ${STATUS_LABEL[c.status].className}`}>
-                {STATUS_LABEL[c.status].text}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ring-1 ${STATUS_LABEL[c.status].className}`}>
+                  {STATUS_LABEL[c.status].text}
+                </span>
+                <button
+                  type="button"
+                  disabled={deletingId === c.id}
+                  onClick={() => handleDelete(c.id)}
+                  className="text-xs text-white/40 hover:text-rose-400 disabled:opacity-40"
+                  aria-label="Excluir clipe"
+                >
+                  excluir
+                </button>
+              </div>
             </div>
           ))}
         </div>

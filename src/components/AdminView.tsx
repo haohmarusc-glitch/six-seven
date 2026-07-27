@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   approveClip,
   adminClipVideoUrl,
+  deleteClip,
   getAdminToken,
   listAdminClips,
   rejectClip,
@@ -138,6 +139,16 @@ export function AdminView() {
                 className="flex-1 py-2 rounded-lg bg-rose-600 text-sm font-bold text-white disabled:opacity-40"
               >
                 rejeitar
+              </button>
+              <button
+                type="button"
+                disabled={busyId === clip.id}
+                onClick={() => {
+                  if (window.confirm("Excluir esse clipe permanentemente?")) act(clip.id, deleteClip);
+                }}
+                className="flex-1 py-2 rounded-lg bg-white/10 text-sm font-bold text-white/70 disabled:opacity-40"
+              >
+                excluir
               </button>
             </div>
           </div>

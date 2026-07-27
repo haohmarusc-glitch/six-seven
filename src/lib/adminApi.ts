@@ -56,6 +56,10 @@ export async function rejectClip(id: string): Promise<void> {
   await adminApi<void>(`/admin/clips/${id}/reject`, { method: "POST" });
 }
 
+export async function deleteClip(id: string): Promise<void> {
+  await adminApi<void>(`/admin/clips/${id}`, { method: "DELETE" });
+}
+
 export function adminClipVideoUrl(id: string): string {
   const token = getAdminToken();
   return `/api/admin/clips/${id}/video?token=${encodeURIComponent(token ?? "")}`;

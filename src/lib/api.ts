@@ -71,6 +71,10 @@ export async function reportClip(id: string): Promise<void> {
   await api<void>(`/clips/${id}/report`, { method: "POST" });
 }
 
+export async function deleteClip(id: string): Promise<void> {
+  await api<void>(`/clips/${id}`, { method: "DELETE" });
+}
+
 export function clipVideoUrl(id: string): string {
   return `/api/clips/${id}/video`;
 }
