@@ -25,13 +25,18 @@ export function useCamera() {
     setStatus("requesting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" },
+        // "ideal" (não exato) -- webcams de notebook/desktop e várias USB não
+        // reportam facingMode nenhum; como constraint exata, isso derrubava
+        // o getUserMedia com OverconstrainedError mesmo com a permissão já
+        // concedida, e caía na mesma mensagem de "sem acesso" de permissão negada.
+        video: { facingMode: { ideal: "user" } },
         audio: true,
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
       setStatus("ready");
-    } catch {
+    } catch (err) {
+      console.error("Falha ao acessar câmera:", err);
       setStatus("denied");
     }
   }, []);
