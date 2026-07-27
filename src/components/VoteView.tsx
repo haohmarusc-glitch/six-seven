@@ -1,51 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
-import { auraScore, listClips, recordVote, type Clip } from "../lib/db";
-
-// forcedId: clipe "convocado" a partir do botão batalhar do ranking -- entra
-// garantido num dos dois lados, o adversário ainda sai sorteado. Se o clipe
-// convocado não existir mais (foi apagado), cai de volta pro sorteio normal.
-function pickPair(clips: Clip[], forcedId?: string | null): [Clip, Clip] | null {
-  if (clips.length < 2) return null;
-  const forced = forcedId ? clips.find((c) => c.id === forcedId) : undefined;
-  const pool = forced ? clips.filter((c) => c.id !== forced.id) : clips;
-  const opponent = pool[Math.floor(Math.random() * pool.length)];
-  if (forced) return [forced, opponent];
-
-  const a = Math.floor(Math.random() * clips.length);
-  let b = Math.floor(Math.random() * clips.length);
-  while (b === a) b = Math.floor(Math.random() * clips.length);
-  return [clips[a], clips[b]];
-}
-
-// Nível de aura exibido na hora da batalha -- mesmo Wilson score do
-// ranking, só que em escala 0-99 (mais fácil de comparar num relance do
-// que a fração crua) e "??" enquanto o clipe ainda não tem voto nenhum,
-// pra não fingir que 0 é um placar de verdade.
-function auraLevel(clip: Clip): string {
-  const n = clip.wins + clip.losses;
-  if (n === 0) return "??";
-  return String(Math.round(auraScore(clip) * 99)).padStart(2, "0");
-}
+import { useEffect, useState } from "react";
+import { castVote, clipVideoUrl, getBattlePair, reportClip, type BattleContestant } from "../lib/api";
 
 function Contestant({
   clip,
   side,
   result,
   onPick,
+  onReport,
 }: {
-  clip: Clip;
+  clip: BattleContestant;
   side: "top" | "bottom";
   result: "winner" | "loser" | null;
   onPick: () => void;
+  onReport: () => void;
 }) {
-  const url = useMemo(() => URL.createObjectURL(clip.blob), [clip.blob]);
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
-
   return (
-    <button
-      type="button"
-      onClick={onPick}
-      disabled={result !== null}
+    <div
       className={`group relative flex-1 min-h-0 overflow-hidden bg-black ring-2 transition-all duration-300 ${
         side === "top" ? "rounded-t-3xl" : "rounded-b-3xl"
       } ${
@@ -53,31 +23,48 @@ function Contestant({
           ? "ring-fuchsia-400 scale-[1.01] z-10"
           : result === "loser"
             ? "ring-white/5 opacity-40 grayscale"
-            : "ring-white/10 active:ring-cyan-300/70"
+            : "ring-white/10"
       }`}
     >
-      <video src={url} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+      <button
+        type="button"
+        onClick={onPick}
+        disabled={result !== null}
+        className="absolute inset-0 w-full h-full active:brightness-90 transition"
+      >
+        <video src={clipVideoUrl(clip.id)} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+      </button>
 
       {/* nível de aura -- placar visível ANTES de votar, faz parte da graça da batalha */}
-      <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/60 backdrop-blur px-2 py-1 rounded-full ring-1 ring-white/10">
+      <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-black/60 backdrop-blur px-2 py-1 rounded-full ring-1 ring-white/10 pointer-events-none">
         <span className="text-[10px] font-black text-cyan-300 tabular-nums">
-          {auraLevel(clip)}
+          {clip.auraLevel ?? "??"}
         </span>
         <span className="text-[9px] text-white/40 uppercase">aura</span>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 to-transparent">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onReport(); }}
+        title="Denunciar clipe"
+        aria-label="Denunciar clipe"
+        className="absolute top-2.5 left-2.5 h-6 w-6 grid place-items-center bg-black/60 backdrop-blur rounded-full ring-1 ring-white/10 text-white/50 hover:text-rose-300 text-xs"
+      >
+        ⚑
+      </button>
+
+      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 to-transparent pointer-events-none">
         <span className="text-base font-black text-white drop-shadow">{clip.label}</span>
       </div>
 
       {result === "winner" && (
-        <div className="absolute inset-0 grid place-items-center bg-fuchsia-500/25 animate-in fade-in zoom-in-95 duration-200">
+        <div className="absolute inset-0 grid place-items-center bg-fuchsia-500/25 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">
           <span className="text-2xl font-black text-white drop-shadow-[0_0_12px_rgba(232,121,249,0.9)]">
             VENCEU ✦
           </span>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -90,48 +77,64 @@ export function VoteView({
   challengerId: string | null;
   onChallengerConsumed: () => void;
 }) {
-  const [pair, setPair] = useState<[Clip, Clip] | null>(null);
+  const [pair, setPair] = useState<BattleContestant[] | null>(null);
   const [round, setRound] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // Guarda qual dos dois venceu enquanto o flash de vitória aparece, antes
   // de sortear a próxima batalha -- sem isso a troca é instantânea e
   // ninguém vê o resultado do próprio voto.
   const [winnerId, setWinnerId] = useState<string | null>(null);
+  const [reportedId, setReportedId] = useState<string | null>(null);
 
   useEffect(() => {
-    listClips().then((all) => {
-      setPair(pickPair(all, challengerId));
-      setLoading(false);
-      // O convocado só vale pra ESSA batalha -- consome na hora pra não
-      // ficar puxando o mesmo clipe de novo depois que o round passar.
-      if (challengerId) onChallengerConsumed();
-    });
+    getBattlePair(challengerId ?? undefined)
+      .then((p) => {
+        setPair(p);
+        setLoading(false);
+        // O convocado só vale pra ESSA batalha -- consome na hora pra não
+        // ficar puxando o mesmo clipe de novo depois que o round passar.
+        if (challengerId) onChallengerConsumed();
+      })
+      .catch((err) => setError(err.message ?? "Falha ao carregar batalha"));
     // Só depende de refreshKey (mudança de aba/voto) de propósito -- reagir
     // a challengerId aqui também dispararia de novo quando ele for
     // consumido (vira null), sorteando por cima do par que acabou de forçar.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
-  const vote = async (winner: Clip, loser: Clip) => {
+  const vote = async (winner: BattleContestant, loser: BattleContestant) => {
     setWinnerId(winner.id);
-    await recordVote(winner.id, loser.id);
+    await castVote(winner.id, loser.id);
     setTimeout(async () => {
-      const updated = await listClips();
-      setPair(pickPair(updated));
+      const updated = await getBattlePair();
+      setPair(updated);
       setWinnerId(null);
       setRound((r) => r + 1);
     }, 700);
+  };
+
+  const report = async (id: string) => {
+    await reportClip(id);
+    setReportedId(id);
+    setTimeout(() => setReportedId(null), 1500);
   };
 
   if (loading) {
     return <p className="text-white/50 text-center">Carregando os clipes...</p>;
   }
 
+  if (error) {
+    return <p className="text-rose-300 text-center text-sm">{error}</p>;
+  }
+
   if (!pair) {
     return (
       <div className="text-center text-white/60 max-w-sm mx-auto">
-        <p className="font-semibold text-white">Precisa de pelo menos 2 clipes pra batalhar.</p>
-        <p className="text-sm mt-1">Grava mais alguns na aba "Farmar" primeiro.</p>
+        <p className="font-semibold text-white">Ninguém pra batalhar com você ainda.</p>
+        <p className="text-sm mt-1">
+          Precisa de pelo menos 2 clipes aprovados de dispositivos diferentes.
+        </p>
       </div>
     );
   }
@@ -150,12 +153,14 @@ export function VoteView({
           side="top"
           result={winnerId ? (winnerId === a.id ? "winner" : "loser") : null}
           onPick={() => vote(a, b)}
+          onReport={() => report(a.id)}
         />
         <Contestant
           clip={b}
           side="bottom"
           result={winnerId ? (winnerId === b.id ? "winner" : "loser") : null}
           onPick={() => vote(b, a)}
+          onReport={() => report(b.id)}
         />
 
         {/* selo VS flutuando na costura entre os dois cards */}
@@ -164,7 +169,9 @@ export function VoteView({
         </div>
       </div>
 
-      <p className="text-xs text-white/40">Toca no clipe que farmou mais aura</p>
+      <p className="text-xs text-white/40">
+        {reportedId ? "Denúncia enviada, valeu." : "Toca no clipe que farmou mais aura"}
+      </p>
     </div>
   );
 }

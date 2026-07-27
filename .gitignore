@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Backend
+server/uploads
+server/drizzle
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -1,0 +1,28 @@
+{
+  "name": "six-seven-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@replit/object-storage": "^1.0.0",
+    "drizzle-orm": "^0.45.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0",
+    "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { auraScore, deleteClip, listClips, type Clip } from "../lib/db";
+import { useEffect, useState } from "react";
+import { clipVideoUrl, getLeaderboard, reportClip, type LeaderboardEntry } from "../lib/api";
 
-function Thumb({ clip, rank }: { clip: Clip; rank: number }) {
-  const url = useMemo(() => URL.createObjectURL(clip.blob), [clip.blob]);
-  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+function Thumb({ clip, rank }: { clip: LeaderboardEntry; rank: number }) {
   const total = clip.wins + clip.losses;
   const winRate = total ? Math.round((clip.wins / total) * 100) : 0;
 
@@ -12,7 +10,7 @@ function Thumb({ clip, rank }: { clip: Clip; rank: number }) {
       <span className="w-7 shrink-0 text-center font-black text-white/40 tabular-nums">
         {rank}
       </span>
-      <video src={url} muted playsInline className="h-14 w-11 rounded-lg object-cover bg-black shrink-0" />
+      <video src={clipVideoUrl(clip.id)} muted playsInline className="h-14 w-11 rounded-lg object-cover bg-black shrink-0" />
       <div className="min-w-0 flex-1">
         <p className="font-semibold text-white truncate">{clip.label}</p>
         <p className="text-xs text-white/50 tabular-nums">
@@ -31,24 +29,21 @@ export function LeaderboardView({
   refreshKey: number;
   onChallenge: (clipId: string) => void;
 }) {
-  const [clips, setClips] = useState<Clip[]>([]);
+  const [ranked, setRanked] = useState<LeaderboardEntry[]>([]);
+  const [reportedId, setReportedId] = useState<string | null>(null);
 
   useEffect(() => {
-    listClips().then(setClips);
+    getLeaderboard().then(setRanked).catch(() => {});
   }, [refreshKey]);
 
-  const ranked = useMemo(
-    () => [...clips].sort((a, b) => auraScore(b) - auraScore(a)),
-    [clips],
-  );
-
-  const handleDelete = async (id: string) => {
-    await deleteClip(id);
-    setClips((prev) => prev.filter((c) => c.id !== id));
+  const handleReport = async (id: string) => {
+    await reportClip(id);
+    setReportedId(id);
+    setTimeout(() => setReportedId(null), 1500);
   };
 
   if (ranked.length === 0) {
-    return <p className="text-white/50 text-center">Nenhum clipe ainda. Vai farmar aura.</p>;
+    return <p className="text-white/50 text-center">Nenhum clipe aprovado ainda. Vai farmar aura.</p>;
   }
 
   return (
@@ -70,11 +65,11 @@ export function LeaderboardView({
             </button>
             <button
               type="button"
-              onClick={() => handleDelete(clip.id)}
+              onClick={() => handleReport(clip.id)}
               className="text-white/30 hover:text-rose-400 text-xs px-2 py-1"
-              aria-label={`Apagar clipe ${clip.label}`}
+              aria-label={`Denunciar clipe ${clip.label}`}
             >
-              apagar
+              {reportedId === clip.id ? "denunciado" : "denunciar"}
             </button>
           </div>
         </div>
