@@ -1,0 +1,99 @@
+2026-07-27T12:49:25.616Z > six-seven-server@1.0.0 start
+2026-07-27T12:49:26.832Z forwarding local port 3000 to external port 80 (mapped as 1104)
+2026-07-27T12:49:26.833Z six-seven server on :3000
+2026-07-27T12:49:26.833Z healthcheck failed error=healthcheck /: Get "http://127.0.0.1:1104/": dial tcp 127.0.0.1:1104: connect: connection refused
+2026-07-27T12:49:33.405Z system: received signal terminated
+2026-07-27T12:49:39.677Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-07-27T12:49:39.677Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-27T12:49:39.677Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-07-27T12:49:39.677Z (node:45) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-07-27T12:49:39.677Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-07-27T12:49:39.677Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-07-27T12:49:39.677Z To prepare for this change:
+2026-07-27T13:58:57.076Z starting up user application
+2026-07-27T13:58:57.077Z forwarding local port 22890 to external port 80 (mapped as 1104)
+2026-07-27T13:58:57.077Z metasidecar: loaded enterprise status from environment is_enterprise=false
+2026-07-27T13:58:57.078Z healthcheck failed error=healthcheck /: Get "http://127.0.0.1:1104/": dial tcp 127.0.0.1:1104: connect: connection refused
+2026-07-27T13:58:57.091Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:57.108Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:57.138Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:57.182Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:57.286Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:57.593Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:58.172Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:58.460Z > six-seven@0.0.0 start
+2026-07-27T13:58:58.460Z > npm run start --workspace server
+2026-07-27T13:58:58.536Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T13:58:58.694Z > node dist/index.js
+2026-07-27T13:58:58.694Z > six-seven-server@1.0.0 start
+2026-07-27T13:58:59.899Z six-seven server on :22890
+2026-07-27T13:59:04.234Z system: received signal terminated
+2026-07-27T13:59:27.394Z To prepare for this change:
+2026-07-27T13:59:27.394Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-07-27T13:59:27.394Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-07-27T13:59:27.394Z (node:47) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-07-27T13:59:27.394Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-07-27T13:59:27.394Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-07-27T13:59:27.394Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-27T15:57:20.288Z metasidecar: loaded enterprise status from environment is_enterprise=false
+2026-07-27T15:57:20.288Z starting up user application
+2026-07-27T15:57:20.289Z forwarding local port 5173 to external port 80 (mapped as 1104)
+2026-07-27T15:57:20.292Z healthcheck failed error=healthcheck /: Get "http://127.0.0.1:1104/": dial tcp 127.0.0.1:1104: connect: connection refused
+2026-07-27T15:57:20.297Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.310Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.340Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.415Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.486Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.549Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:20.751Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:21.769Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:22.145Z > six-seven@0.0.0 start
+2026-07-27T15:57:22.145Z > npm run start --workspace server
+2026-07-27T15:57:22.411Z > six-seven-server@1.0.0 start
+2026-07-27T15:57:22.411Z > node dist/index.js
+2026-07-27T15:57:23.329Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:23.853Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T15:57:23.956Z six-seven server on :5173
+2026-07-27T15:57:28.858Z system: received signal terminated
+2026-07-27T15:57:40.899Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-27T15:57:40.899Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-07-27T15:57:40.899Z To prepare for this change:
+2026-07-27T15:57:40.899Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-07-27T15:57:40.899Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-07-27T15:57:40.899Z (node:47) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-07-27T15:57:40.899Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-07-27T16:00:49.579Z starting up user application
+2026-07-27T16:00:49.579Z metasidecar: loaded enterprise status from environment is_enterprise=false
+2026-07-27T16:00:49.579Z forwarding local port 5173 to external port 80 (mapped as 1104)
+2026-07-27T16:00:49.600Z healthcheck failed error=healthcheck /: Get "http://127.0.0.1:1104/": dial tcp 127.0.0.1:1104: connect: connection refused
+2026-07-27T16:00:49.604Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:49.607Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:49.646Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:49.724Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:49.729Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:49.988Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:50.113Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:50.914Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:51.300Z > npm run start --workspace server
+2026-07-27T16:00:51.300Z > six-seven@0.0.0 start
+2026-07-27T16:00:51.456Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:51.570Z > node dist/index.js
+2026-07-27T16:00:51.570Z > six-seven-server@1.0.0 start
+2026-07-27T16:00:51.674Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:51.702Z healthcheck failed error=healthcheck / returned status 500
+2026-07-27T16:00:53.291Z six-seven server on :5173
+2026-07-27T16:00:58.538Z system: received signal terminated
+2026-07-27T16:01:11.271Z To prepare for this change:
+2026-07-27T16:01:11.271Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-07-27T16:01:11.271Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-07-27T16:01:11.271Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-07-27T16:01:11.271Z (node:47) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-07-27T16:01:11.271Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-07-27T16:01:11.271Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-27T16:01:11.271Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-07-27T16:01:11.271Z - If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+2026-07-27T16:01:11.271Z (node:47) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+2026-07-27T16:01:11.271Z - If you want the current behavior, explicitly use 'sslmode=verify-full'
+2026-07-27T16:01:11.271Z In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+2026-07-27T16:01:11.271Z See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+2026-07-27T16:01:11.271Z To prepare for this change:
