@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.tsbuildinfo
 *.local
+.tsbuildinfo/
 
 # Backend
 server/uploads
