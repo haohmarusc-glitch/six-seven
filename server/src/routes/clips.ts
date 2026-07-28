@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { db } from "../db.js";
-import { clipsTable, votesTable, reportsTable } from "../schema.js";
+import { clipsTable, votesTable, reportsTable, commentsTable } from "../schema.js";
 import { videoStorage } from "../storage.js";
 import { requireDeviceId, getIdParam } from "../middleware.js";
 import { auraScore } from "../aura.js";
@@ -46,6 +46,10 @@ router.post("/clips", requireDeviceId, upload.single("video"), async (req, res) 
   if (status === "approved") {
     await db.update(clipsTable).set({ status: "approved" }).where(eq(clipsTable.id, clip.id));
   }
+
+  // Log de todo envio -- fica no stdout do processo, e também alimenta o
+  // "log de envios" do painel admin (ver GET /admin/uploads).
+  console.log(`[upload] clipe ${clip.id} enviado por ${req.deviceId} ("${label}") -> status inicial: ${status}`);
 
   res.status(201).json({ id: clip.id, status });
 });
@@ -214,6 +218,55 @@ router.post("/clips/:id/report", requireDeviceId, async (req, res) => {
   }
 
   res.status(204).end();
+});
+
+const MAX_NICKNAME_LEN = 24;
+const MAX_COMMENT_LEN = 280;
+
+router.get("/clips/:id/comments", async (req, res) => {
+  const id = getIdParam(req, res);
+  if (!id) return;
+  const rows = await db
+    .select({
+      id: commentsTable.id,
+      nickname: commentsTable.nickname,
+      body: commentsTable.body,
+      createdAt: commentsTable.createdAt,
+    })
+    .from(commentsTable)
+    .where(eq(commentsTable.clipId, id))
+    .orderBy(sql`${commentsTable.createdAt} asc`);
+  res.json(rows);
+});
+
+router.post("/clips/:id/comments", requireDeviceId, async (req, res) => {
+  const id = getIdParam(req, res);
+  if (!id) return;
+
+  const nickname = typeof req.body?.nickname === "string" ? req.body.nickname.trim().slice(0, MAX_NICKNAME_LEN) : "";
+  const body = typeof req.body?.body === "string" ? req.body.body.trim().slice(0, MAX_COMMENT_LEN) : "";
+  if (!nickname || !body) {
+    res.status(400).json({ error: "nickname e comentário são obrigatórios" });
+    return;
+  }
+
+  const [clip] = await db.select({ id: clipsTable.id }).from(clipsTable).where(eq(clipsTable.id, id));
+  if (!clip) {
+    res.status(404).end();
+    return;
+  }
+
+  const [comment] = await db
+    .insert(commentsTable)
+    .values({ clipId: id, deviceId: req.deviceId, nickname, body })
+    .returning({
+      id: commentsTable.id,
+      nickname: commentsTable.nickname,
+      body: commentsTable.body,
+      createdAt: commentsTable.createdAt,
+    });
+
+  res.status(201).json(comment);
 });
 
 export default router;

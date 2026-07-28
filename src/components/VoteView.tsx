@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { castVote, clipVideoUrl, getBattlePair, reportClip, type BattleContestant } from "../lib/api";
+import { CommentBox } from "./CommentBox";
 
 function Contestant({
   clip,
@@ -14,6 +15,14 @@ function Contestant({
   onPick: () => void;
   onReport: () => void;
 }) {
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  // A rodada seguinte reaproveita esse mesmo slot (top/bottom) pra um clipe
+  // novo -- fecha o painel do clipe anterior em vez de deixá-lo aberto por
+  // cima de um vídeo que não tem nada a ver.
+  useEffect(() => {
+    setCommentsOpen(false);
+  }, [clip.id]);
+
   return (
     <div
       className={`group relative flex-1 min-h-0 overflow-hidden bg-black ring-2 transition-all duration-300 ${
@@ -53,9 +62,40 @@ function Contestant({
         ⚑
       </button>
 
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setCommentsOpen((v) => !v); }}
+        title="Comentários"
+        aria-label="Comentários"
+        className="absolute bottom-2.5 right-2.5 z-20 h-6 w-6 grid place-items-center bg-black/60 backdrop-blur rounded-full ring-1 ring-white/10 text-white/50 hover:text-cyan-300 text-xs"
+      >
+        💬
+      </button>
+
       <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 to-transparent pointer-events-none">
         <span className="text-base font-black text-white drop-shadow">{clip.label}</span>
       </div>
+
+      {commentsOpen && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute inset-x-0 bottom-0 max-h-[75%] bg-black/90 backdrop-blur-md ring-1 ring-white/10 rounded-t-2xl z-30 flex flex-col"
+        >
+          <div className="flex items-center justify-between px-3 pt-2.5 pb-1 shrink-0">
+            <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">Comentários</span>
+            <button
+              type="button"
+              onClick={() => setCommentsOpen(false)}
+              className="text-white/40 hover:text-white text-xs"
+            >
+              fechar
+            </button>
+          </div>
+          <div className="overflow-y-auto px-3 pb-3">
+            <CommentBox clipId={clip.id} />
+          </div>
+        </div>
+      )}
 
       {result === "winner" && (
         <div className="absolute inset-0 grid place-items-center bg-fuchsia-500/25 animate-in fade-in zoom-in-95 duration-200 pointer-events-none">

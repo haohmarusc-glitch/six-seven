@@ -42,3 +42,12 @@ export const reportsTable = pgTable(
     uniqueIndex("reports_clip_device_unique").on(table.clipId, table.deviceId),
   ],
 );
+
+export const commentsTable = pgTable("comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  clipId: uuid("clip_id").notNull().references(() => clipsTable.id, { onDelete: "cascade" }),
+  deviceId: text("device_id").notNull(),
+  nickname: text("nickname").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

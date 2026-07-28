@@ -7,6 +7,26 @@ import { requireAdmin, getIdParam } from "../middleware.js";
 
 const router = Router();
 
+// Log de envios -- todo clipe já enviado, mais recente primeiro, independente
+// de status (a lista de moderação acima já esconde rejeitado). É só
+// histórico/observabilidade pro admin, não faz parte do fluxo de revisão.
+const UPLOAD_LOG_LIMIT = 30;
+
+router.get("/admin/uploads", requireAdmin, async (_req, res) => {
+  const rows = await db
+    .select({
+      id: clipsTable.id,
+      label: clipsTable.label,
+      deviceId: clipsTable.deviceId,
+      status: clipsTable.status,
+      createdAt: clipsTable.createdAt,
+    })
+    .from(clipsTable)
+    .orderBy(sql`${clipsTable.createdAt} desc`)
+    .limit(UPLOAD_LOG_LIMIT);
+  res.json(rows);
+});
+
 router.get("/admin/clips", requireAdmin, async (_req, res) => {
   // Pendente primeiro (é o que precisa de ação), depois o resto pra dar
   // contexto/histórico -- ordenado do mais antigo pro mais novo dentro de

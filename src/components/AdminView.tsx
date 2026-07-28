@@ -5,10 +5,12 @@ import {
   deleteClip,
   getAdminToken,
   listAdminClips,
+  listUploadLog,
   rejectClip,
   setAdminToken,
   UnauthorizedError,
   type AdminClip,
+  type UploadLogEntry,
 } from "../lib/adminApi";
 
 const STATUS_BADGE: Record<AdminClip["status"], string> = {
@@ -51,12 +53,17 @@ export function AdminView() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [uploadLog, setUploadLog] = useState<UploadLogEntry[]>([]);
+  const [logOpen, setLogOpen] = useState(false);
 
   const load = () => {
     setLoading(true);
     setError(null);
-    listAdminClips()
-      .then(setClips)
+    Promise.all([listAdminClips(), listUploadLog()])
+      .then(([clipsRes, logRes]) => {
+        setClips(clipsRes);
+        setUploadLog(logRes);
+      })
       .catch((err) => {
         if (err instanceof UnauthorizedError) {
           setReady(false);
@@ -97,6 +104,32 @@ export function AdminView() {
         <button type="button" onClick={load} className="text-xs text-white/40 hover:text-white">
           atualizar
         </button>
+      </div>
+
+      <div className="bg-white/5 rounded-xl ring-1 ring-white/10 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setLogOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-bold text-white/40 uppercase tracking-widest"
+        >
+          <span>Log de envios ({uploadLog.length})</span>
+          <span>{logOpen ? "▲" : "▼"}</span>
+        </button>
+        {logOpen && (
+          <ul className="px-3 pb-3 flex flex-col gap-1.5 max-h-48 overflow-y-auto text-xs">
+            {uploadLog.length === 0 && <li className="text-white/40">Nenhum envio ainda.</li>}
+            {uploadLog.map((entry) => (
+              <li key={entry.id} className="flex items-center justify-between gap-2 text-white/60">
+                <span className="truncate">
+                  {entry.label} <span className="text-white/30">· {entry.deviceId.slice(0, 8)}</span>
+                </span>
+                <span className="shrink-0 tabular-nums text-white/40">
+                  {new Date(entry.createdAt).toLocaleString("pt-BR")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {error && <p className="text-rose-300 text-sm">{error}</p>}
