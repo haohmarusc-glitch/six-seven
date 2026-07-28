@@ -60,6 +60,18 @@ export async function deleteClip(id: string): Promise<void> {
   await adminApi<void>(`/admin/clips/${id}`, { method: "DELETE" });
 }
 
+export interface UploadLogEntry {
+  id: string;
+  label: string;
+  deviceId: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+}
+
+export async function listUploadLog(): Promise<UploadLogEntry[]> {
+  return adminApi<UploadLogEntry[]>("/admin/uploads");
+}
+
 export function adminClipVideoUrl(id: string): string {
   const token = getAdminToken();
   return `/api/admin/clips/${id}/video?token=${encodeURIComponent(token ?? "")}`;

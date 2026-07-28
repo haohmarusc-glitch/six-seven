@@ -25,6 +25,13 @@ export interface LeaderboardEntry {
   score: number;
 }
 
+export interface Comment {
+  id: string;
+  nickname: string;
+  body: string;
+  createdAt: string;
+}
+
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
@@ -73,6 +80,18 @@ export async function reportClip(id: string): Promise<void> {
 
 export async function deleteClip(id: string): Promise<void> {
   await api<void>(`/clips/${id}`, { method: "DELETE" });
+}
+
+export async function getComments(clipId: string): Promise<Comment[]> {
+  return api<Comment[]>(`/clips/${clipId}/comments`);
+}
+
+export async function postComment(clipId: string, nickname: string, body: string): Promise<Comment> {
+  return api<Comment>(`/clips/${clipId}/comments`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nickname, body }),
+  });
 }
 
 export function clipVideoUrl(id: string): string {
